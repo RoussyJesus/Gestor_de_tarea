@@ -1,0 +1,146 @@
+﻿@page
+@model Gestor_de_tareas.Pages.IndexModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Inicio";
+    var tokens = Antiforgery.GetAndStoreTokens(HttpContext);
+    var token = tokens.RequestToken;
+}
+
+<section class="tarjeta">
+    <form method="get" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label for="FiltroEstadoId">Filtrar por estado:</label>
+        <select id="FiltroEstadoId" name="FiltroEstadoId">
+            <option value="">(Todos)</option>
+            @foreach (var estado in Model.Estados)
+            {
+                <option value="@estado.Id" selected="@(Model.FiltroEstadoId==estado.Id)">
+                    @estado.Nombre
+                </option>
+            }
+        </select>
+        <button class="boton">Aplicar</button>
+        <a asp-page="/Tasks/Crear" class="boton">Nueva tarea</a>
+    </form>
+</section>
+
+<section class="tarjeta" style="margin-top:12px">
+    <table class="table" style="width:100%;border-collapse:collapse">
+        <thead>
+            <tr>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--borde)">Título</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--borde)">Asignado</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--borde)">Vence</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--borde)">Estado</th>
+                <th style="text-align:left;padding:10px;border-bottom:1px solid var(--borde)">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Tareas.Count == 0)
+            {
+                <tr><td colspan="5" class="muted" style="padding:12px">No hay tareas registradas.</td></tr>
+            }
+            else
+            {
+                @foreach (var t in Model.Tareas)
+                {
+                    <tr id="fila-@t.Id" style="transition:opacity .2s ease">
+                        <td style="padding:10px;vertical-align:top">
+                            <div><strong>@t.Titulo</strong></div>
+                            @if (!string.IsNullOrWhiteSpace(t.Descripcion))
+                            {
+                                <div class="muted" style="font-size:13px">@t.Descripcion</div>
+                            }
+                            <div class="muted" style="font-size:12px">Creada: @t.CreadoEn.ToLocalTime()</div>
+                        </td>
+                        <td style="padding:10px;vertical-align:top">@(@t.UsuarioAsignadoNombre ?? "-")</td>
+                        <td style="padding:10px;vertical-align:top">@(@t.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        <td style="padding:10px;vertical-align:top">
+                            <span class="state-dot state-@t.EstadoId"></span>
+                            <span id="nombre-estado-@t.Id">@t.EstadoNombre</span>
+                            <div style="margin-top:6px">
+                                <select data-id="@t.Id" class="selector-estado">
+                                    @foreach (var e in Model.Estados)
+                                    {
+                                        <option value="@e.Id" selected="@(t.EstadoId==e.Id)">@e.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+                        </td>
+                        <td style="padding:10px;vertical-align:top">
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <a asp-page="/Tasks/Editar" asp-route-id="@t.Id" class="boton">Editar</a>
+
+                                <form method="post" data-eliminar="@t.Id" style="display:inline">
+                                    <input name="__RequestVerificationToken" type="hidden" value="@token" />
+                                    <input type="hidden" name="id" value="@t.Id" />
+                                    <input type="hidden" name="handler" value="Eliminar" />
+                                    <button type="button"
+                                            class="boton btn-eliminar"
+                                            data-id="@t.Id">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</section>
+
+@section Scripts {
+    <script>
+        const token = '@token';
+
+       
+        document.querySelectorAll('.selector-estado').forEach(sel => {
+            sel.addEventListener('change', async (e) => {
+                const id = Number(e.target.dataset.id);
+                const nuevoEstadoId = Number(e.target.value);
+                const res = await fetch('?handler=CambiarEstado', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ id, nuevoEstadoId })
+                });
+                if (!res.ok) { alert('No se pudo cambiar el estado'); return; }
+                const data = await res.json();
+                document.getElementById('nombre-estado-' + id).innerText = data.estadoNombre;
+                // Actualizar punto de color
+                const td = e.target.closest('td');
+                const dot = td.querySelector('.state-dot');
+                dot.className = 'state-dot state-' + nuevoEstadoId;
+            });
+        });
+
+       
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = Number(btn.dataset.id);
+                if (!id) return;
+                if (!confirm('¿Eliminar esta tarea?')) return;
+
+                const fd = new FormData();
+                fd.append('id', id);
+
+                const res = await fetch('?handler=Eliminar', {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': token }, // antiforgery
+                    body: fd                                       // ← FormData, no Content-Type manual
+                });
+
+                if (!res.ok) {
+                    let msg = 'No se pudo eliminar';
+                    try { const err = await res.json(); if (err?.error) msg += `: ${err.error}`; } catch { }
+                    alert(msg);
+                    return;
+                }
+
+                const data = await res.json();
+                const fila = document.getElementById('fila-' + data.id);
+                if (fila) { fila.style.opacity = '0'; setTimeout(() => fila.remove(), 200); }
+            });
+        });
+    </script>
+}

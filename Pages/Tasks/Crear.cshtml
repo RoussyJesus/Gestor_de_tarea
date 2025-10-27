@@ -1,0 +1,59 @@
+﻿@page
+@model Gestor_de_tareas.Pages.Tasks.CrearModel
+@{
+    ViewData["Title"] = "Nueva tarea";
+}
+
+<section class="tarjeta">
+    <h2 style="margin-top:0">Nueva tarea</h2>
+
+    <form method="post" class="form" style="display:grid;gap:12px">
+        <div class="row" style="display:grid;gap:6px">
+            <label asp-for="Tarea.Titulo"></label>
+            <input asp-for="Tarea.Titulo" />
+            <span class="muted" asp-validation-for="Tarea.Titulo"></span>
+        </div>
+
+        <div class="row" style="display:grid;gap:6px">
+            <label asp-for="Tarea.Descripcion"></label>
+            <textarea asp-for="Tarea.Descripcion" rows="4"></textarea>
+        </div>
+
+        <div class="grid cols-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div class="row" style="display:grid;gap:6px">
+                <label asp-for="Tarea.FechaVencimiento"></label>
+                <input asp-for="Tarea.FechaVencimiento" />
+            </div>
+
+            <div class="row" style="display:grid;gap:6px">
+                <label asp-for="Tarea.UsuarioAsignadoId"></label>
+                <select asp-for="Tarea.UsuarioAsignadoId">
+                    <option value="">(Sin asignar)</option>
+                    @foreach (var u in Model.Usuarios)
+                    {
+                        <option value="@u.Id">@u.Nombres</option>
+                    }
+                </select>
+            </div>
+
+            <div class="row" style="display:grid;gap:6px">
+                <label asp-for="Tarea.EstadoId"></label>
+                <select asp-for="Tarea.EstadoId">
+                    @foreach (var e in Model.Estados)
+                    {
+                        <option value="@e.Id">@e.Nombre</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="submit" class="boton">Guardar</button>
+            <a asp-page="/Index" class="boton">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

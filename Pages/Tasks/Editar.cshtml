@@ -1,0 +1,62 @@
+﻿@page "{id:int}"
+@model Gestor_de_tareas.Pages.Tasks.EditarModel
+@{
+    ViewData["Title"] = "Editar tarea";
+}
+<section class="tarjeta">
+    <h2 style="margin:0 0 10px 0">Editar tarea</h2>
+
+    <form method="post" class="form" style="display:grid;gap:12px">
+        <input type="hidden" asp-for="Tarea.Id" />
+
+        <div class="row">
+            <label asp-for="Tarea.Titulo"></label>
+            <input asp-for="Tarea.Titulo" />
+            <span class="error" asp-validation-for="Tarea.Titulo"></span>
+        </div>
+
+        <div class="row">
+            <label asp-for="Tarea.Descripcion"></label>
+            <textarea asp-for="Tarea.Descripcion" rows="4"></textarea>
+        </div>
+
+        <div class="grid-3">
+            <div class="row">
+                <label asp-for="Tarea.FechaVencimiento"></label>
+                <input asp-for="Tarea.FechaVencimiento" />
+            </div>
+            <div class="row">
+                <label asp-for="Tarea.UsuarioAsignadoId"></label>
+                <select asp-for="Tarea.UsuarioAsignadoId">
+                    <option value="">(Sin asignar)</option>
+                    @foreach (var u in Model.Usuarios)
+                    {
+                        <option value="@u.Id">@u.Nombres</option>
+                    }
+                </select>
+            </div>
+            <div class="row">
+                <label asp-for="Tarea.EstadoId"></label>
+                <select asp-for="Tarea.EstadoId">
+                    @foreach (var e in Model.Estados)
+                    {
+                        <option value="@e.Id">@e.Nombre</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="acciones">
+            <button type="submit" class="boton primario">Guardar cambios</button>
+            <a asp-page="/Index" class="boton">Volver</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+   
+        document.querySelector('input[name="Tarea.Titulo"]')?.focus();
+    </script>
+}

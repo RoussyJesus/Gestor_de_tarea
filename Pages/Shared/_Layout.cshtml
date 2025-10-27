@@ -1,0 +1,79 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] ?? "Gestor de tareas")</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        
+        :root{
+            --fondo:#0b1020; --carta:#0f172a; --borde:#1f2937; --texto:#e5e7eb;
+            --muted:#94a3b8; --primario:#2563eb; --focus:#60a5fa;
+        }
+        html,body{height:100%}
+        body{margin:0;background:var(--fondo);color:var(--texto);font-family:system-ui,Segoe UI,Roboto,Arial}
+        .contenedor{max-width:1040px;margin:0 auto;padding:16px}
+        header.topbar{position:sticky;top:0;z-index:30;background:#0b1228c0;backdrop-filter:saturate(150%) blur(6px);
+            border-bottom:1px solid var(--borde)}
+        .topbar .contenedor{display:flex;align-items:center;justify-content:space-between}
+        .marca{display:flex;gap:10px;align-items:center}
+        .marca h1{font-size:18px;margin:0}
+        .nav{display:flex;gap:10px;align-items:center}
+        a{color:#93c5fd;text-decoration:none}
+        a.boton,.boton{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;
+            border:1px solid var(--borde);background:#111827;transition:transform .12s ease, box-shadow .2s}
+        .boton:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.35)}
+        main{padding-block:18px;animation:aparecer .25s ease}
+        .tarjeta{background:var(--carta);border:1px solid var(--borde);border-radius:16px;padding:14px}
+        footer{color:var(--muted);border-top:1px solid var(--borde);margin-top:24px;padding:16px 0}
+
+        @@keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+      
+        :where(a,button,input,select,textarea).boton:focus,
+        :where(a,button,input,select,textarea):focus{outline:2px solid var(--focus);outline-offset:2px}
+    </style>
+    @RenderSection("Estilos", required: false)
+</head>
+<body>
+    <header class="topbar">
+        <div class="contenedor">
+            <div class="marca">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="#60a5fa" stroke-width="2"></circle>
+                    <path d="M7 13l3 3 7-7" stroke="#34d399" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <h1>Gestor de tareas</h1>
+            </div>
+            <nav class="nav">
+                <a asp-page="/Index" class="boton">Inicio</a>
+                <a asp-page="/Tasks/Create" class="boton">Nueva tarea</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="contenedor">
+        @RenderBody()
+    </main>
+
+    <footer>
+        <div class="contenedor">
+            <div>© @DateTime.Now.Year · Hecho con Razor Pages (.NET 8). Interfaz CSS pura.</div>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
