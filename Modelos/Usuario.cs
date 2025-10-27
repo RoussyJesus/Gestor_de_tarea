@@ -2,7 +2,8 @@
 
 namespace Gestor_de_tareas.Modelos
 {
-	public class Usuario
+    /****/
+    public class Usuario
 	{
 		public int Id { get; set; }
 

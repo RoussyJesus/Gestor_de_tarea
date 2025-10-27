@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Gestor_de_tareas.Modelos
-{
-	public class Tarea
+{  /****/
+    public class Tarea
 	{
 		public int Id { get; set; }
 
